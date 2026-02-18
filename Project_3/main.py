@@ -84,7 +84,27 @@ async def update_todo(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Database error while updating todo."
         )
+	
 
+@app.delete("/todo/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_todo(
+		db: db_dependency, 
+		todo_id: int = Path(gt=0) 
+	):
+	todo_model = db.query(Todos).filter(Todos.id == todo_id).first()
+	if todo_model is None:
+		raise HTTPException(status_code=404, detail='Todo not found.')
+	
+	try:
+		db.query(Todos).filter(Todos.id == todo_id).delete()
+		db.commit() # commit this change to db (persist in disk/file)
+	except SQLAlchemyError as e:
+		db.rollback()
+		raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database error while deleting todo."
+        )
+	
 
 ################################################################################################
 
