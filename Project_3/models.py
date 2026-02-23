@@ -13,7 +13,7 @@ class Users(Base):
 	last_name: Mapped[str]
 	hashed_password: Mapped[str]
 	is_active: Mapped[bool] = mapped_column(default=True)
-	role = Mapped[str]
+	role: Mapped[str]
 
 	def to_dict(self) -> dict[str, Any]:
 		return {
@@ -31,4 +31,10 @@ class Todos(Base):
 	description: Mapped[str]
 	priority: Mapped[int]
 	complete: Mapped[bool]
-	ownser_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+	owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+
+	def to_dict(self) -> dict[str, Any]:
+		return {
+            column.name: getattr(self, column.name)
+            for column in self.__table__.columns
+        }
