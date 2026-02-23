@@ -47,6 +47,9 @@ def get_db():
 #db dependency injection
 db_dependency = Annotated[Session, Depends(get_db)]
 
+def hash_password(password: str) -> str:
+	return bcrypt_context.hash(password)
+
 def authenticate_user(username: str, password: str, db):
 	user = db.query(Users).filter(Users.username == username).first()
 	if not user:
@@ -55,11 +58,8 @@ def authenticate_user(username: str, password: str, db):
 		return False
 	return user
 
-def create_access_token(username: str, user_id: int, expires_delta: timedelta):
-	print(f'username: {username} ::::: id: {user_id}')
-	enconde = {'sub': username, 'id': user_id}
-	print(enconde)
-	print('\n\n\n\n')
+def create_access_token(username: str, user_id: int, role:str, expires_delta: timedelta):
+	enconde = {'sub': username, 'id': user_id, 'role': role}
 	expires = datetime.now(timezone.utc) + expires_delta
 	enconde.update({'exp': expires})
 	return jwt.encode(enconde, SECRET_KEY, algorithm=ALGORITHM)
@@ -69,10 +69,11 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
 		payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
 		username: Optional[str] = payload.get('sub')
 		user_id: Optional[int] = payload.get('id')
+		user_role: Optional[str] = payload.get('role') 
 		if username is None or user_id is None:
 			raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
 					   detail='Could not validate user.')
-		return {'username': username, 'id': user_id}
+		return {'username': username, 'id': user_id, 'user_role': user_role}
 	except JWTError:
 		raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
 				detail='Could not validate user.')
@@ -106,7 +107,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
 					   detail='Could not validate user.')
 	
 	# print(user.id)
-	token = create_access_token(user.username, user.id, timedelta(minutes=20))
+	token = create_access_token(user.username, user.id, user.role, timedelta(minutes=20))
 	
 	return {
 		'access_token': token,
