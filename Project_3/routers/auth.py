@@ -58,6 +58,9 @@ def authenticate_user(username: str, password: str, db):
 		return False
 	return user
 
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+	return bcrypt_context.verify(plain_password, hashed_password)
+
 def create_access_token(username: str, user_id: int, role:str, expires_delta: timedelta):
 	enconde = {'sub': username, 'id': user_id, 'role': role}
 	expires = datetime.now(timezone.utc) + expires_delta
