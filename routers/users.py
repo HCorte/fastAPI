@@ -1,4 +1,4 @@
-from fastapi import APIRouter,Depends, HTTPException, Path
+from fastapi import APIRouter,Depends, HTTPException, Path, Body
 from pydantic import BaseModel, Field
 import starlette.status as status
 from typing import Annotated
@@ -83,5 +83,32 @@ async def update_user_password(
 			detail="Database error while updating user password."
 		)
 	
-
+@router.put("/user/phone_number/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def update_user_phone_number(
+	user: user_dependency,
+	db: db_dependency,
+	phone_number: str = Body(min_length=7, max_length=15),
+	user_id: int = Path(gt=0),
+):
+	if user is None or user.get('id') != user_id:
+		raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Authentication Failed')
+	user_model = db.query(Users).filter(Users.id == user_id)\
+		.first()
+	if user_model is None:
+		raise HTTPException(status_code=404, detail='User not found.')
+	db.query(Users).filter(Users.id == user_id).update({"phone_number": phone_number})
+	try:
+		db.commit()
+		db.refresh(user_model)
+		return {
+			"id": user_id,
+			"username": user_model.username,
+			"phone_number": phone_number,
+		}
+	except SQLAlchemyError as e:
+		db.rollback()
+		raise HTTPException(
+			status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+			detail="Database error while updating user phone number."
+		)
 	

@@ -14,6 +14,7 @@ class Users(Base):
 	hashed_password: Mapped[str]
 	is_active: Mapped[bool] = mapped_column(default=True)
 	role: Mapped[str]
+	phone_number: Mapped[str]
 
 	def to_dict(self) -> dict[str, Any]:
 		return {
