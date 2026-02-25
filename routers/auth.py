@@ -83,20 +83,29 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def createUser(db: db_dependency,create_user_request: CreateUserRequest):
-	create_user_model = Users(
-		email=create_user_request.email,
-		username=create_user_request.username,
-		first_name=create_user_request.first_name,
-		last_name=create_user_request.last_name,		 
-		role=create_user_request.role,
-		hashed_password=bcrypt_context.hash(create_user_request.password),
-		is_active=True
-	)
+	try:
+		create_user_model = Users(
+			email=create_user_request.email,
+			username=create_user_request.username,
+			first_name=create_user_request.first_name,
+			last_name=create_user_request.last_name,		 
+			role=create_user_request.role,
+			hashed_password=bcrypt_context.hash(create_user_request.password),
+			is_active=True
+		)
 
-	db.add(create_user_model)
-	db.commit()
+		db.add(create_user_model)
+		db.commit()
+	
+	except Exception as e:
+		db.rollback()
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+							detail=f"Error creating user: {e}")
 
-	#return create_user_model
+	return {
+		'username': create_user_request.username,
+		'email': create_user_request.email,
+	}
 
 @router.post("/token", response_model=Token)
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
