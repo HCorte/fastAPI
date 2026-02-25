@@ -90,7 +90,7 @@ async def update_user_phone_number(
 	phone_number: str = Body(min_length=7, max_length=15),
 	user_id: int = Path(gt=0),
 ):
-	if user is None or user.get('id') != user_id:
+	if user is None: #or user.get('id') != user_id:
 		raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Authentication Failed')
 	user_model = db.query(Users).filter(Users.id == user_id)\
 		.first()
