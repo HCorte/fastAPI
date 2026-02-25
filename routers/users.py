@@ -96,8 +96,11 @@ async def update_user_phone_number(
 		.first()
 	if user_model is None:
 		raise HTTPException(status_code=404, detail='User not found.')
-	db.query(Users).filter(Users.id == user_id).update({"phone_number": phone_number})
+	#db.query(Users).filter(Users.id == user_id).update({"phone_number": phone_number})
+	user_model.phone_number = phone_number
+
 	try:
+		db.add(user_model)
 		db.commit()
 		db.refresh(user_model)
 		return {
