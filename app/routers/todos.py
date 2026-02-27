@@ -1,12 +1,12 @@
 from fastapi import APIRouter,Depends, HTTPException, Path
 from pydantic import BaseModel, Field
 import starlette.status as status
-from typing import Annotated
+from typing import Annotated, TypeAlias
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from models import Todos
-from database import SessionLocal
+from ..models import Todos
+from ..database import SessionLocal
 from .auth import get_current_user
 
 router = APIRouter()
@@ -19,7 +19,7 @@ def get_db():
 		db.close()
 
 #db dependency injection
-db_dependency = Annotated[Session, Depends(get_db)]
+db_dependency: TypeAlias = Annotated[Session, Depends(get_db)]
 # user dependency injection (token validation)
 user_dependency = Annotated[dict, Depends(get_current_user)]
 

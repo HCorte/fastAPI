@@ -1,5 +1,5 @@
 from typing import Any
-from database import Base
+from .database import Base
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 

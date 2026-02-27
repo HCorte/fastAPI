@@ -5,8 +5,8 @@ from typing import Annotated
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from models import Users
-from database import SessionLocal
+from ..models import Users
+from ..database import SessionLocal
 from .auth import get_current_user, hash_password, verify_password
 
 router = APIRouter(
