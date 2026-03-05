@@ -57,14 +57,14 @@ async def create_todo(user: user_dependency,
 		if user is None:
 			raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Authentication Failed')
 		
-		print(f'user: {user}')
-		print(f'user id: {user.get("id")}')
+		#print(f'user: {user}')
+		#print(f'user id: {user.get("id")}')
 		todo_model = Todos(**todo_request.model_dump(), owner_id=user.get('id')) # creates an instance of this object
-		print(f'todo_model: {todo_model.to_dict()}')
 		db.add(todo_model) # add this object instance to the db (only in memory)
 		db.commit() # commit this change to db (persist in disk/file)
-		db.refresh(todo_model)  # important!
-		return todo_model
+		db.refresh(todo_model)  # important! so to update the instance with the generated id and any other default values set by the database
+		#print(f'todo_model: {todo_model.to_dict()}')  # debug print statement to check the state of the model after refresh this way the id is generated and we can see it in the output
+		return todo_model.to_dict()
 	except SQLAlchemyError as e:
 		db.rollback()
 		raise HTTPException(
