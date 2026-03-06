@@ -5,6 +5,7 @@ from app.database import Base
 from fastapi.testclient import TestClient
 from app.models import Todos, Users
 import pytest
+from app.routers.auth import bcrypt_context
 
 SQLALCHEMY_DATABASE_URL = f"postgresql://postgres:7k5lwpe@localhost/testdb"
 
@@ -64,6 +65,26 @@ def test_todo():
 	db.add(todo)
 	db.commit()
 	yield todo
+	with engine.begin() as connection:
+		connection.execute(text("TRUNCATE TABLE todos RESTART IDENTITY CASCADE;"))
+		connection.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE;"))
+
+@pytest.fixture
+def test_user():
+	user = Users(
+		username='hcorte',
+		email='hcorte@lnec.pt',
+		first_name='Henrique',
+		last_name='Corte',
+		hashed_password=bcrypt_context.hash('testpassword'),
+		role='admin',
+		phone_number='1234567890',
+	)
+
+	db = TestingSessionLocal()
+	db.add(user)
+	db.commit()
+	yield user
 	with engine.begin() as connection:
 		connection.execute(text("TRUNCATE TABLE todos RESTART IDENTITY CASCADE;"))
 		connection.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE;"))

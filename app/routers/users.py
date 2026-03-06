@@ -45,7 +45,7 @@ async def get_user(
 	raise HTTPException(status_code=404, detail='User not found.')
 
 
-@router.put("/user/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.put("/password/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def update_user_password(
 		user: user_dependency,
 		db: db_dependency,
@@ -83,7 +83,7 @@ async def update_user_password(
 			detail="Database error while updating user password."
 		)
 	
-@router.put("/user/phone_number/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.put("/phone_number/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def update_user_phone_number(
 	user: user_dependency,
 	db: db_dependency,
