@@ -28,19 +28,17 @@ def test_return_user(test_user):
 	# 	print("\n\nModel not found.\n\n")
 	# db.close()
 
-def test_change_password_success(test_user):
+def test_change_password_success(test_user, db_session):
 	# to garantie that the id is 1 in the test_user fixture the database clean up needs RESTART IDENTITY CASCADE;" otherwise the id will be incremented and the test will fail because the user with id 1 will not be found
 	response = client.put("/users/password/1", json={
 		"password": "testpassword",
 		"new_password":"newpassword"
 	})
-	db = TestingSessionLocal()
-	model = db.query(Users).filter(Users.id == 1).first()
+	model = db_session.query(Users).filter(Users.id == 1).first()
 	if model is not None:
 		print("\n\nModel:\n", model.to_dict(), "\n\n")
 	else:
 		print("\n\nModel not found.\n\n")
-	db.close()
 	#assert response.is_success
 	assert response.status_code == status.HTTP_204_NO_CONTENT
 

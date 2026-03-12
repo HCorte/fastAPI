@@ -44,7 +44,7 @@ def test_read_one_authenticated_not_found():
 	assert response.json() == {'detail': 'Todo not found.'}
 
 
-def test_create_todo(test_todo):
+def test_create_todo(test_todo, db_session):
 	request_data={
 		'title':'New Todo !',
 		'description':'New todo description',
@@ -56,8 +56,7 @@ def test_create_todo(test_todo):
 	# print(response.json())
 	assert response.status_code == status.HTTP_201_CREATED
 
-	db = TestingSessionLocal()
-	todos: Todos | None = db.query(Todos).filter(Todos.id == 2).first()
+	todos: Todos | None = db_session.query(Todos).filter(Todos.id == 2).first()
 
 	# if todos:
 	# 	print("Model found in database:")
@@ -72,14 +71,8 @@ def test_create_todo(test_todo):
 	assert todos.description == request_data.get('description')
 	assert todos.priority == request_data.get('priority')
 	assert todos.complete == request_data.get('complete')
-	db.close()
 
-	# Clean up DB (truncate tables) using a fresh connection
-	with engine.begin() as connection:
-		connection.execute(text("TRUNCATE TABLE todos RESTART IDENTITY CASCADE;"))
-		connection.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE;"))
-
-def test_update_todo(test_todo):
+def test_update_todo(test_todo, db_session):
 	request_data = {
 		'title':'Change the title of the todo already saved!',
 		'description': 'Need to learn everyday!',
@@ -89,20 +82,13 @@ def test_update_todo(test_todo):
 
 	response = client.put('todo/1', json=request_data)
 	assert response.status_code == status.HTTP_204_NO_CONTENT
-	db = TestingSessionLocal()
-	model = db.query(Todos).filter(Todos.id == 1).first()
+	model = db_session.query(Todos).filter(Todos.id == 1).first()
 	assert model is not None, "Todo with id 1 was not found in the database after update"
 	# print(f"model.title: {model.title}")
 	assert model.title == request_data.get('title')
 	assert model.description == request_data.get('description')
 	assert model.priority == request_data.get('priority')
 	assert model.complete == request_data.get('complete')
-	db.close()
-
-	# Clean up DB (truncate tables) using a fresh connection
-	with engine.begin() as connection:
-		connection.execute(text("TRUNCATE TABLE todos RESTART IDENTITY CASCADE;"))
-		connection.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE;"))
 
 def test_update_todo_not_found(test_todo):
 	request_data = {
@@ -116,35 +102,16 @@ def test_update_todo_not_found(test_todo):
 	assert response.status_code == status.HTTP_404_NOT_FOUND
 	assert response.json() == {'detail': 'Todo not found.'}
 
-	# Clean up DB (truncate tables) using a fresh connection
-	with engine.begin() as connection:
-		connection.execute(text("TRUNCATE TABLE todos RESTART IDENTITY CASCADE;"))
-		connection.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE;"))
-
-def test_delete_todo(test_todo):
+def test_delete_todo(test_todo, db_session):
 	response = client.delete('todo/1')
 	assert response.status_code == status.HTTP_204_NO_CONTENT
-	db = TestingSessionLocal()
-	model = db.query(Todos).filter(Todos.id == 1).first()
+	model = db_session.query(Todos).filter(Todos.id == 1).first()
 	assert model is None, "Todo with id 1 was not deleted from the database"
-	db.close()
-
-	# Clean up DB (truncate tables) using a fresh connection
-	with engine.begin() as connection:
-		connection.execute(text("TRUNCATE TABLE todos RESTART IDENTITY CASCADE;"))
-		connection.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE;"))
 
 
-def test_delete_todo_not_found(test_todo):
+def test_delete_todo_not_found(test_todo, db_session):
 	response = client.delete('todo/999')
 	assert response.status_code == status.HTTP_404_NOT_FOUND
 	assert response.json() == {'detail': 'Todo not found.'}
-	db = TestingSessionLocal()
-	model = db.query(Todos).filter(Todos.id == 999).first()
+	model = db_session.query(Todos).filter(Todos.id == 999).first()
 	assert model is None, "Todo with id 999 does not exist in database"
-	db.close()
-
-	# Clean up DB (truncate tables) using a fresh connection
-	with engine.begin() as connection:
-		connection.execute(text("TRUNCATE TABLE todos RESTART IDENTITY CASCADE;"))
-		connection.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE;"))

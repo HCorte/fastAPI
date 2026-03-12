@@ -51,12 +51,12 @@ db_dependency = Annotated[Session, Depends(get_db)]
 def hash_password(password: str) -> str:
 	return bcrypt_context.hash(password)
 
-def authenticate_user(username: str, password: str, db):
+def authenticate_user(username: str, password: str, db) -> Users | None:
 	user = db.query(Users).filter(Users.username == username).first()
 	if not user:
-		return False
+		return 
 	if not bcrypt_context.verify(password, user.hashed_password):
-		return False
+		return 
 	return user
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:

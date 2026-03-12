@@ -85,6 +85,13 @@ def test_user():
 	db.add(user)
 	db.commit()
 	yield user
+	db.close()
 	with engine.begin() as connection:
 		connection.execute(text("TRUNCATE TABLE todos RESTART IDENTITY CASCADE;"))
 		connection.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE;"))
+
+@pytest.fixture
+def db_session():
+	db = TestingSessionLocal()
+	yield db
+	db.close()

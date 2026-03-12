@@ -22,14 +22,12 @@ def test_admin_read_all_authenticated(test_todo):
 	}]
 
 
-def test_admin_delete_todo(test_todo):
+def test_admin_delete_todo(test_todo, db_session):
 	response = client.delete("/admin/todo/1")
 	assert response.status_code == status.HTTP_204_NO_CONTENT
 
-	db = TestingSessionLocal()
-	model = db.query(Todos).filter(Todos.id == 1).first()
+	model = db_session.query(Todos).filter(Todos.id == 1).first()
 	assert model is None # its none because the record should be deleted
-	db.close()
 
 def test_admin_todo_not_found():
 	response = client.delete("/admin/todo/999")
